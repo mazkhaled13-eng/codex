@@ -1,0 +1,811 @@
+<!DOCTYPE html><html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestion du Personnel — Fichier Unique</title>
+  <style>
+    :root{
+      --bg:#0f172a;          /* slate-900 */
+      --panel:#111827;       /* gray-900 */
+      --muted:#1f2937;       /* gray-800 */
+      --card:#0b1226;        /* custom */
+      --text:#e5e7eb;        /* gray-200 */
+      --soft:#94a3b8;        /* slate-400 */
+      --accent:#22c55e;      /* green-500 */
+      --accent-2:#06b6d4;    /* cyan-500 */
+      --danger:#ef4444;      /* red-500 */
+      --warning:#f59e0b;     /* amber-500 */
+      --ok:#10b981;          /* emerald-500 */
+      --shadow: 0 10px 30px rgba(0,0,0,.25);
+      --radius: 16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:linear-gradient(120deg, #0b1020, #0a132a 60%, #0b1b2e);
+      color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      letter-spacing:.2px;
+    }
+    .app{
+      display:grid; grid-template-rows:auto 1fr; min-height:100dvh;
+    }
+    header{
+      display:flex; align-items:center; gap:16px; padding:18px 22px; position:sticky; top:0; z-index:5;
+      background:linear-gradient(180deg, rgba(15,23,42,.9), rgba(15,23,42,.6)); backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(148,163,184,.15);
+    }
+    header .brand{display:flex; align-items:center; gap:10px}
+    .logo{width:36px; height:36px; border-radius:12px; display:grid; place-items:center; color:#001b14;
+      background:conic-gradient(from 210deg, #22c55e, #06b6d4, #22c55e);
+      box-shadow:0 0 0 2px rgba(34,197,94,.25), inset 0 0 18px rgba(255,255,255,.28);
+      font-weight:900
+    }
+    h1{font-size:20px; margin:0}
+    .sub{color:var(--soft); font-size:12px}
+    .wrap{display:grid; grid-template-columns: 420px 1fr; gap:18px; padding:18px;}
+    @media (max-width: 1100px){ .wrap{ grid-template-columns: 1fr; } }.card{background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)); border:1px solid rgba(148,163,184,.12); border-radius:var(--radius); box-shadow:var(--shadow)}
+.panel{padding:18px}
+.panel h2{margin:0 0 12px; font-size:18px}
+.muted{color:var(--soft)}
+
+/* FORMULAIRE EMPLOYÉ */
+form#emp-form{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+form#emp-form .full{grid-column:1/-1}
+label{display:block; font-size:12px; color:var(--soft); margin:4px 0}
+input, select, textarea{
+  width:100%; padding:12px 12px; border-radius:12px; border:1px solid rgba(148,163,184,.2);
+  background:#0a1224; color:var(--text); outline:none; transition:.2s border, .2s box-shadow; box-shadow: inset 0 0 0 9999px rgba(255,255,255,.015)
+}
+textarea{min-height:82px}
+input:focus, select:focus, textarea:focus{ border-color: rgba(94,234,212,.55); box-shadow: 0 0 0 3px rgba(6,182,212,.18)}
+.row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.actions{display:flex; gap:8px; flex-wrap:wrap}
+.btn{
+  padding:10px 14px; border-radius:12px; border:1px solid rgba(148,163,184,.18); color:var(--text); background:#0b1429; cursor:pointer;
+  display:inline-flex; align-items:center; gap:8px; transition:.2s transform, .2s background, .2s border-color;
+}
+.btn:hover{ transform: translateY(-1px); border-color:rgba(148,163,184,.35)}
+.btn.primary{ background:linear-gradient(180deg, rgba(34,197,94,.95), rgba(34,197,94,.8)); color:#052e1c; border-color:transparent; font-weight:700 }
+.btn.warn{ background:linear-gradient(180deg, rgba(245,158,11,.95), rgba(245,158,11,.8)); color:#1c1605; border-color:transparent; font-weight:700 }
+.btn.ghost{ background:transparent }
+.btn.danger{ background:linear-gradient(180deg, rgba(239,68,68,.95), rgba(239,68,68,.85)); color:#2e0909; border-color:transparent; font-weight:700 }
+.btn.small{ padding:8px 10px; border-radius:10px; font-size:12px }
+
+.photo-uploader{display:flex; gap:12px; align-items:center}
+.avatar{width:64px; height:64px; border-radius:12px; background:#0b1429; border:1px dashed rgba(148,163,184,.25); display:grid; place-items:center; overflow:hidden}
+.avatar img{width:100%; height:100%; object-fit:cover}
+
+/* LISTE + BARRE OUTILS */
+.toolbar{display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:12px}
+.search{flex:1}
+
+table{ width:100%; border-collapse:collapse; overflow:hidden; border-radius:12px;}
+thead{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));}
+th, td{ text-align:left; padding:12px 12px; border-bottom:1px solid rgba(148,163,184,.12)}
+tbody tr:hover{ background:rgba(148,163,184,.06)}
+th.sortable{cursor:pointer}
+th.sortable:after{content:"\25B4\25BE"; font-size:10px; opacity:.35; margin-left:6px}
+
+.badge{padding:4px 8px; border-radius:999px; font-size:12px; border:1px solid rgba(148,163,184,.2); background:#0b1429}
+.pill{padding:6px 10px; border-radius:999px; font-size:12px; background:rgba(34,197,94,.15); color:#a7f3d0; border:1px solid rgba(16,185,129,.3)}
+
+/* MODAL DÉTAILS */
+dialog{ border:none; border-radius:18px; width:min(100%, 980px); background:linear-gradient(180deg, rgba(10,18,36,.98), rgba(10,18,36,.98)); color:var(--text); box-shadow:var(--shadow)}
+dialog::backdrop{ background: rgba(2,6,23,.6); backdrop-filter: blur(3px)}
+.modal-head{display:flex; align-items:center; gap:12px; padding:16px 18px; border-bottom:1px solid rgba(148,163,184,.12)}
+.modal-body{display:grid; grid-template-columns:300px 1fr; gap:16px; padding:16px 18px}
+.modal-foot{display:flex; justify-content:space-between; gap:12px; padding:16px 18px; border-top:1px solid rgba(148,163,184,.12)}
+@media (max-width:900px){ .modal-body{grid-template-columns: 1fr} }
+
+.profile{background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)); border:1px solid rgba(148,163,184,.12); border-radius:16px; padding:16px}
+.profile .big{width:120px; height:120px; border-radius:18px; overflow:hidden; border:1px solid rgba(148,163,184,.25)}
+.kv{display:grid; grid-template-columns:120px 1fr; gap:8px; font-size:14px}
+.kv div:nth-child(odd){ color:var(--soft) }
+.kv div:nth-child(even){ font-weight:600 }
+
+.leave-box{background:linear-gradient(180deg, rgba(34,197,94,.07), rgba(34,197,94,.04)); border:1px solid rgba(34,197,94,.25); border-radius:16px; padding:14px}
+.leave-row{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;}
+.leave-list{max-height:220px; overflow:auto; border:1px solid rgba(148,163,184,.12); border-radius:12px}
+.leave-item{display:grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 2fr auto; gap:8px; padding:10px 12px; border-bottom:1px solid rgba(148,163,184,.08); font-size:14px}
+.leave-item:last-child{border-bottom:none}
+
+/* Impression (fiche employé) */
+@media print{
+  body{background:#fff}
+  header, .wrap, dialog::backdrop, .modal-foot .btn:not(.print){ display:none !important }
+  dialog{ position:static; transform:none; box-shadow:none; width:auto }
+  .modal-body{ grid-template-columns: 1fr }
+  .profile, .leave-box{ border:1px solid #ccc }
+  .btn.print{ display:none }
+}
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo">GP</div>
+        <div>
+          <h1>Gestion du Personnel</h1>
+          <div class="sub">Fichier unique — données stockées localement (navigateur).</div>
+        </div>
+      </div>
+      <div style="margin-left:auto" class="actions">
+        <button class="btn" id="export-json">Exporter (JSON)</button>
+        <label class="btn ghost" for="import-json-input">Importer</label>
+        <input id="import-json-input" type="file" accept="application/json" hidden />
+        <button class="btn" id="export-csv">Exporter (CSV)</button>
+        <button class="btn warn" id="reset-app">Réinitialiser</button>
+      </div>
+    </header><main class="wrap">
+  <!-- COLONNE FORMULAIRE -->
+  <section class="card panel">
+    <h2>Fiche Employé</h2>
+    <form id="emp-form">
+      <div>
+        <label for="nom">Nom *</label>
+        <input id="nom" required placeholder="Ex: Benali" />
+      </div>
+      <div>
+        <label for="prenom">Prénom *</label>
+        <input id="prenom" required placeholder="Ex: Nadia" />
+      </div>
+
+      <div>
+        <label for="dateNaissance">Date de naissance</label>
+        <input id="dateNaissance" type="date" />
+      </div>
+      <div>
+        <label for="situationMaritale">Situation maritale</label>
+        <select id="situationMaritale">
+          <option value="">— Sélectionner —</option>
+          <option>Célibataire</option>
+          <option>Marié(e)</option>
+          <option>Divorcé(e)</option>
+          <option>Veuf/Veuve</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="adresse">Adresse</label>
+        <input id="adresse" placeholder="Adresse complète" />
+      </div>
+      <div>
+        <label for="email">E‑mail</label>
+        <input id="email" type="email" placeholder="prenom.nom@exemple.dz" />
+      </div>
+
+      <div>
+        <label for="telephone">Téléphone</label>
+        <input id="telephone" placeholder="Ex: 0550 00 00 00" />
+      </div>
+      <div>
+        <label for="nombreEnfants">Nombre d'enfants</label>
+        <input id="nombreEnfants" type="number" min="0" step="1" value="0" />
+      </div>
+
+      <div>
+        <label for="numeroAssurance">Numéro d'assurance</label>
+        <input id="numeroAssurance" placeholder="Ex: 12-34-56-789-0" />
+      </div>
+      <div>
+        <label for="dateEntree">Date d'entrée *</label>
+        <input id="dateEntree" type="date" required />
+      </div>
+
+      <div>
+        <label for="classement">Classement (champ libre)</label>
+        <input id="classement" placeholder="Ex: Catégorie B / Niveau 2" />
+      </div>
+      <div>
+        <label for="salaire">Salaire (en DA)</label>
+        <input id="salaire" type="number" min="0" step="1" placeholder="Ex: 65000" />
+      </div>
+
+      <div>
+        <label for="numeroCompte">Numéro de compte</label>
+        <input id="numeroCompte" placeholder="Ex: RIP / RIB" />
+      </div>
+      <div>
+        <label for="banque">Banque</label>
+        <select id="banque">
+          <option value="">— Sélectionner —</option>
+          <option>CCP</option>
+           <option>BEA</option>
+          <option>FRANSABANK EL-DJAZAIR</option>
+          <option>SOCIETE GÉNÉRALE</option>
+          <option>NATEXIS</option>
+          <option>BDL</option>
+          <option>CPA</option>
+          <option>AL BARAKA</option>
+          <option>TRUST BANK ALGERIA</option>
+          <option>EL SALEM BANQUE</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="affectation">Affectation</label>
+        <select id="affectation">
+          <option value="">— Sélectionner —</option>
+          <option>Administration</option>
+          <option>Artistique</option>
+        </select>
+      </div>
+
+      <div class="full">
+        <label>Photo</label>
+        <div class="photo-uploader">
+          <div class="avatar" id="photo-preview"><span class="muted">Aperçu</span></div>
+          <input id="photo" type="file" accept="image/*" />
+          <button type="button" class="btn ghost small" id="reset-photo">Retirer</button>
+        </div>
+      </div>
+
+      <div class="full" style="margin-top:6px">
+        <h3 style="margin:8px 0 6px; font-size:14px">Paramètres de congés</h3>
+        <div class="row">
+          <div>
+            <label for="methodConge">Méthode de calcul</label>
+            <select id="methodConge">
+              <option value="mois">2,5 jours par mois travaillé</option>
+              <option value="quota">Quota annuel fixe</option>
+            </select>
+          </div>
+          <div>
+            <label for="quotaAnnuel">Quota annuel (si quota)</label>
+            <input id="quotaAnnuel" type="number" min="0" step="0.5" value="30" />
+          </div>
+        </div>
+      </div>
+
+      <div class="full actions" style="margin-top:8px">
+        <button class="btn primary" id="save-btn">Enregistrer</button>
+        <button class="btn" type="reset" id="clear-btn">Nouveau</button>
+        <button class="btn danger" id="delete-btn" type="button" title="Supprimer l'employé sélectionné" disabled>Supprimer</button>
+      </div>
+      <input type="hidden" id="emp-id" />
+    </form>
+  </section>
+
+  <!-- COLONNE LISTE -->
+  <section class="card panel">
+    <div class="toolbar">
+      <input class="search" id="search" placeholder="Rechercher (nom, prénom, email, banque, affectation)…" />
+      <div class="actions">
+        <span class="pill" id="count">0 employé</span>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="emp-table">
+        <thead>
+          <tr>
+            <th>Photo</th>
+            <th class="sortable" data-key="nom">Nom</th>
+            <th class="sortable" data-key="prenom">Prénom</th>
+            <th class="sortable" data-key="affectation">Affectation</th>
+            <th class="sortable" data-key="banque">Banque</th>
+            <th class="sortable" data-key="salaire">Salaire (DA)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+  </div>  <!-- MODAL DÉTAILS EMPLOYÉ / CONGÉS -->  <dialog id="details-modal">
+    <div class="modal-head">
+      <div style="display:flex; align-items:center; gap:12px">
+        <div class="big avatar" id="modal-photo"></div>
+        <div>
+          <div style="font-size:18px; font-weight:800" id="modal-name">—</div>
+          <div class="muted" id="modal-sub">—</div>
+        </div>
+      </div>
+      <button class="btn ghost" onclick="closeModal()" style="margin-left:auto">Fermer</button>
+    </div><div class="modal-body">
+  <div class="profile" id="profile">
+    <div class="kv">
+      <div>Nom</div><div id="k-nom">—</div>
+      <div>Prénom</div><div id="k-prenom">—</div>
+      <div>Date de naissance</div><div id="k-dn">—</div>
+      <div>Adresse</div><div id="k-adr">—</div>
+      <div>E‑mail</div><div id="k-mail">—</div>
+      <div>Téléphone</div><div id="k-tel">—</div>
+      <div>Situation</div><div id="k-sit">—</div>
+      <div>Enfants</div><div id="k-enf">—</div>
+      <div>N° Assurance</div><div id="k-ass">—</div>
+      <div>Date d'entrée</div><div id="k-ent">—</div>
+      <div>Classement</div><div id="k-cls">—</div>
+      <div>Salaire</div><div id="k-sal">—</div>
+      <div>N° Compte</div><div id="k-cpt">—</div>
+      <div>Banque</div><div id="k-bnk">—</div>
+      <div>Affectation</div><div id="k-af">—</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="leave-box">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px">
+        <div style="font-weight:700">Congés — Calcul & Suivi</div>
+        <button class="btn small print" onclick="window.print()">Imprimer la fiche</button>
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin-bottom:10px">
+        <div class="card panel" style="padding:10px">
+          <div class="muted" style="font-size:12px">Acquis (année en cours)</div>
+          <div id="c-acquis" style="font-size:22px; font-weight:800">0</div>
+        </div>
+        <div class="card panel" style="padding:10px">
+          <div class="muted" style="font-size:12px">Pris (année en cours)</div>
+          <div id="c-pris" style="font-size:22px; font-weight:800">0</div>
+        </div>
+        <div class="card panel" style="padding:10px">
+          <div class="muted" style="font-size:12px">Restant</div>
+          <div id="c-restant" style="font-size:22px; font-weight:800">0</div>
+        </div>
+        <div class="card panel" style="padding:10px">
+          <div class="muted" style="font-size:12px">Méthode</div>
+          <div id="c-method" style="font-size:14px; font-weight:700">—</div>
+        </div>
+      </div>
+
+      <div class="leave-row" style="margin-bottom:8px">
+        <div>
+          <label for="lv-type">Type</label>
+          <select id="lv-type">
+            <option>Annuel</option>
+            <option>Maladie</option>
+            <option>Exceptionnel</option>
+          </select>
+        </div>
+        <div>
+          <label for="lv-debut">Du</label>
+          <input id="lv-debut" type="date" />
+        </div>
+        <div>
+          <label for="lv-fin">Au</label>
+          <input id="lv-fin" type="date" />
+        </div>
+        <div>
+          <label for="lv-notes">Notes</label>
+          <input id="lv-notes" placeholder="Observation (optionnel)" />
+        </div>
+      </div>
+      <div class="actions" style="justify-content:space-between">
+        <label style="display:flex; align-items:center; gap:8px" class="muted"><input type="checkbox" id="lv-excl-we" /> Exclure weekends</label>
+        <div>
+          <button class="btn" type="button" onclick="calcPreview()">Prévisualiser jours</button>
+          <button class="btn primary" type="button" onclick="addLeave()">Ajouter</button>
+        </div>
+      </div>
+
+      <div class="leave-list" id="leave-list" style="margin-top:10px">
+        <div class="leave-item" style="opacity:.6">
+          <div><b>Période</b></div>
+          <div><b>Type</b></div>
+          <div><b>Jours</b></div>
+          <div><b>Année</b></div>
+          <div><b>Notes</b></div>
+          <div><b></b></div>
+        </div>
+        <!-- items dynamiques ici -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-foot">
+  <div class="muted">Astuce : le calcul par défaut est de <b>2,5 jours/mois</b> travaillé. Vous pouvez basculer sur un quota annuel fixe dans la fiche employé.</div>
+  <div class="actions">
+    <button class="btn" onclick="closeModal()">Fermer</button>
+  </div>
+</div>
+
+  </dialog>  <script>
+    /* =====================
+       STOCKAGE & UTILITAIRES
+    ====================== */
+    const LS_KEY = 'gp_employees_v1';
+    let employees = loadEmployees();
+    let sortState = { key: 'nom', dir: 'asc' };
+
+    function loadEmployees(){
+      try{ return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }
+      catch(e){ return [] }
+    }
+    function saveEmployees(){ localStorage.setItem(LS_KEY, JSON.stringify(employees)); }
+
+    function uid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36) }
+
+    const fmtDA = new Intl.NumberFormat('fr-FR', { style:'currency', currency:'DZD', maximumFractionDigits:0 });
+
+    function byKey(a,b,key){
+      const va = (a[key] ?? '').toString().toLowerCase();
+      const vb = (b[key] ?? '').toString().toLowerCase();
+      if (va < vb) return -1; if (va > vb) return 1; return 0;
+    }
+
+    function dataURL(file){
+      return new Promise((res, rej)=>{
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      })
+    }
+
+    function daysBetween(d1, d2){
+      const a = new Date(d1); const b = new Date(d2);
+      if (isNaN(a) || isNaN(b)) return 0;
+      const ms = b - a; if (ms < 0) return 0;
+      return Math.floor(ms / (1000*60*60*24)) + 1; // inclusif
+    }
+    function businessDaysBetween(d1, d2){
+      let start = new Date(d1), end = new Date(d2);
+      if (isNaN(start) || isNaN(end) || end < start) return 0;
+      let count = 0; let cur = new Date(start);
+      while(cur <= end){
+        const day = cur.getDay(); // 0=dim,6=sam
+        if (day !== 0 && day !== 6) count++;
+        cur.setDate(cur.getDate()+1);
+      }
+      return count;
+    }
+    function monthsWorkedThisYear(dateEntree){
+      const d = new Date(dateEntree); if (isNaN(d)) return 0;
+      const now = new Date();
+      const y = now.getFullYear();
+      const start = new Date(y, 0, 1);
+      const from = d > start ? d : start;
+      if (from > now) return 0;
+      // Mois complets entre 'from' et 'now' (approx: demi-mois ~ mois acquis prorata)
+      let months = (now.getFullYear() - from.getFullYear())*12 + (now.getMonth() - from.getMonth());
+      // si on a dépassé le jour du mois, on compte +1 comme mois en cours
+      if (now.getDate() >= from.getDate()) months += 1;
+      return Math.max(0, months);
+    }
+
+    function computeAccruedForYear(emp){
+      const method = emp.methodConge || 'mois';
+      if (method === 'quota'){
+        return Number(emp.quotaAnnuel || 30);
+      } else {
+        const months = monthsWorkedThisYear(emp.dateEntree);
+        const rate = Number(emp.accrualRate || 2.5);
+        return +(months * rate).toFixed(2);
+      }
+    }
+
+    function leavesTakenThisYear(emp){
+      const y = new Date().getFullYear();
+      return (emp.leaves||[]).filter(l => new Date(l.debut).getFullYear()===y).reduce((s,l)=> s + Number(l.jours||0), 0);
+    }
+
+    function updateCount(){
+      const c = document.getElementById('count');
+      const n = employees.length;
+      c.textContent = n + (n>1? ' employés' : ' employé');
+    }
+
+    /* =====================
+       RENDU TABLE
+    ====================== */
+    const tbody = document.querySelector('#emp-table tbody');
+
+    function renderTable(){
+      const q = document.getElementById('search').value.trim().toLowerCase();
+      const rows = employees
+        .slice()
+        .sort((a,b)=> (sortState.dir==='asc'? byKey(a,b,sortState.key) : byKey(b,a,sortState.key)))
+        .filter(e=>{
+          const hay = [e.nom, e.prenom, e.email, e.banque, e.affectation].join(' ').toLowerCase();
+          return hay.includes(q);
+        })
+        .map(e=>{
+          const tr = document.createElement('tr');
+          const imgTD = document.createElement('td');
+          const ph = document.createElement('div');
+          ph.className='avatar'; ph.style.width='42px'; ph.style.height='42px';
+          if (e.photo){ const im = document.createElement('img'); im.src=e.photo; ph.appendChild(im) } else { ph.innerHTML='<span class="muted" style="font-size:11px">—</span>' }
+          imgTD.appendChild(ph); tr.appendChild(imgTD);
+
+          const tdNom = document.createElement('td'); tdNom.textContent = e.nom || '—'; tr.appendChild(tdNom);
+          const tdPre = document.createElement('td'); tdPre.textContent = e.prenom || '—'; tr.appendChild(tdPre);
+          const tdAf = document.createElement('td'); tdAf.innerHTML = e.affectation? `<span class="badge">${e.affectation}</span>` : '—'; tr.appendChild(tdAf);
+          const tdBk = document.createElement('td'); tdBk.textContent = e.banque || '—'; tr.appendChild(tdBk);
+          const tdSa = document.createElement('td'); tdSa.textContent = e.salaire? fmtDA.format(Number(e.salaire)) : '—'; tr.appendChild(tdSa);
+
+          const actions = document.createElement('td');
+          actions.innerHTML = `
+            <div class="actions">
+              <button class="btn small" data-act="edit" data-id="${e.id}">Modifier</button>
+              <button class="btn small" data-act="details" data-id="${e.id}">Détails</button>
+              <button class="btn small danger" data-act="del" data-id="${e.id}">Suppr.</button>
+            </div>`;
+          tr.appendChild(actions);
+
+          return tr;
+        });
+      tbody.innerHTML='';
+      rows.forEach(r=> tbody.appendChild(r));
+      updateCount();
+    }
+
+    document.getElementById('search').addEventListener('input', renderTable);
+    document.querySelectorAll('th.sortable').forEach(th=>{
+      th.addEventListener('click', ()=>{
+        const key = th.dataset.key;
+        if (sortState.key === key){ sortState.dir = (sortState.dir==='asc'?'desc':'asc'); }
+        else { sortState.key = key; sortState.dir='asc' }
+        renderTable();
+      })
+    })
+
+    /* =====================
+       FORM LOGIC
+    ====================== */
+    const form = document.getElementById('emp-form');
+    const saveBtn = document.getElementById('save-btn');
+    const delBtn = document.getElementById('delete-btn');
+
+    async function pickPhoto(){
+      const f = document.getElementById('photo').files?.[0];
+      if (!f) return '';
+      const url = await dataURL(f);
+      document.getElementById('photo-preview').innerHTML = `<img src="${url}" alt="photo"/>`;
+      return url;
+    }
+    document.getElementById('photo').addEventListener('change', pickPhoto);
+    document.getElementById('reset-photo').addEventListener('click', ()=>{
+      document.getElementById('photo').value = '';
+      document.getElementById('photo-preview').innerHTML = '<span class="muted">Aperçu</span>';
+    })
+
+    function formToEmployee(existing={}){
+      return {
+        id: existing.id || uid(),
+        nom: nom.value.trim(),
+        prenom: prenom.value.trim(),
+        dateNaissance: dateNaissance.value || '',
+        adresse: adresse.value.trim(),
+        email: email.value.trim(),
+        telephone: telephone.value.trim(),
+        situationMaritale: situationMaritale.value,
+        nombreEnfants: Number(nombreEnfants.value || 0),
+        numeroAssurance: numeroAssurance.value.trim(),
+        dateEntree: dateEntree.value,
+        classement: classement.value.trim(),
+        salaire: Number(salaire.value || 0),
+        numeroCompte: numeroCompte.value.trim(),
+        banque: banque.value,
+        affectation: affectation.value,
+        methodConge: methodConge.value,
+        quotaAnnuel: Number(quotaAnnuel.value || 30),
+        accrualRate: 2.5,
+        photo: existing.photo || '',
+        leaves: existing.leaves || []
+      }
+    }
+
+    function fillForm(emp){
+      document.getElementById('emp-id').value = emp.id || '';
+      nom.value = emp.nom || '';
+      prenom.value = emp.prenom || '';
+      dateNaissance.value = emp.dateNaissance || '';
+      adresse.value = emp.adresse || '';
+      email.value = emp.email || '';
+      telephone.value = emp.telephone || '';
+      situationMaritale.value = emp.situationMaritale || '';
+      nombreEnfants.value = emp.nombreEnfants ?? 0;
+      numeroAssurance.value = emp.numeroAssurance || '';
+      dateEntree.value = emp.dateEntree || '';
+      classement.value = emp.classement || '';
+      salaire.value = emp.salaire ?? '';
+      numeroCompte.value = emp.numeroCompte || '';
+      banque.value = emp.banque || '';
+      affectation.value = emp.affectation || '';
+      methodConge.value = emp.methodConge || 'mois';
+      quotaAnnuel.value = emp.quotaAnnuel ?? 30;
+      document.getElementById('photo-preview').innerHTML = emp.photo? `<img src="${emp.photo}"/>` : '<span class="muted">Aperçu</span>';
+      delBtn.disabled = !emp.id;
+    }
+
+    saveBtn.addEventListener('click', async (e)=>{
+      e.preventDefault();
+      if (!form.reportValidity()) return;
+      const currentId = document.getElementById('emp-id').value;
+      let existing = employees.find(x=> x.id===currentId);
+      let emp = formToEmployee(existing || {});
+      if (document.getElementById('photo').files?.length){ emp.photo = await pickPhoto() }
+
+      if (existing){
+        Object.assign(existing, emp);
+      } else {
+        employees.push(emp);
+      }
+      saveEmployees();
+      renderTable();
+      form.reset();
+      document.getElementById('photo-preview').innerHTML = '<span class="muted">Aperçu</span>';
+      document.getElementById('emp-id').value='';
+      delBtn.disabled = true;
+    })
+
+    document.getElementById('clear-btn').addEventListener('click', ()=>{
+      document.getElementById('emp-id').value='';
+      delBtn.disabled = true;
+      document.getElementById('photo-preview').innerHTML = '<span class="muted">Aperçu</span>';
+    })
+
+    delBtn.addEventListener('click', ()=>{
+      const id = document.getElementById('emp-id').value;
+      if (!id) return;
+      if (!confirm('Confirmer la suppression de cet employé ?')) return;
+      employees = employees.filter(e=> e.id!==id);
+      saveEmployees();
+      renderTable();
+      form.reset();
+      document.getElementById('emp-id').value='';
+      delBtn.disabled = true;
+      document.getElementById('photo-preview').innerHTML = '<span class="muted">Aperçu</span>';
+    })
+
+    tbody.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-act]'); if (!btn) return;
+      const id = btn.dataset.id; const emp = employees.find(x=> x.id===id);
+      if (!emp) return;
+      if (btn.dataset.act==='edit'){
+        fillForm(emp);
+        window.scrollTo({ top:0, behavior:'smooth' });
+      } else if (btn.dataset.act==='details'){
+        openDetails(emp);
+      } else if (btn.dataset.act==='del'){
+        if (confirm('Supprimer cet employé ?')){
+          employees = employees.filter(x=> x.id!==id); saveEmployees(); renderTable();
+        }
+      }
+    })
+
+    /* =====================
+       DÉTAILS & CONGÉS
+    ====================== */
+    const modal = document.getElementById('details-modal');
+    let currentEmp = null;
+
+    function openDetails(emp){
+      currentEmp = emp;
+      document.getElementById('modal-name').textContent = `${emp.prenom || ''} ${emp.nom || ''}`.trim() || '—';
+      document.getElementById('modal-sub').textContent = `${emp.affectation || '—'} • ${emp.banque || '—'}`;
+      document.getElementById('modal-photo').innerHTML = emp.photo? `<img src="${emp.photo}"/>` : '';
+
+      const set = (id, v)=> document.getElementById(id).textContent = v || '—';
+      set('k-nom', emp.nom); set('k-prenom', emp.prenom); set('k-dn', emp.dateNaissance); set('k-adr', emp.adresse);
+      set('k-mail', emp.email); set('k-tel', emp.telephone); set('k-sit', emp.situationMaritale); set('k-enf', emp.nombreEnfants);
+      set('k-ass', emp.numeroAssurance); set('k-ent', emp.dateEntree); set('k-cls', emp.classement);
+      set('k-sal', emp.salaire? fmtDA.format(Number(emp.salaire)) : '—'); set('k-cpt', emp.numeroCompte); set('k-bnk', emp.banque); set('k-af', emp.affectation);
+
+      const acquis = computeAccruedForYear(emp);
+      const pris = leavesTakenThisYear(emp);
+      const restant = Math.max(0, +(acquis - pris).toFixed(2));
+      document.getElementById('c-acquis').textContent = acquis;
+      document.getElementById('c-pris').textContent = pris;
+      document.getElementById('c-restant').textContent = restant;
+      document.getElementById('c-method').textContent = (emp.methodConge==='quota') ? `Quota annuel ${emp.quotaAnnuel} j.` : `2,5 j/mois (depuis ${emp.dateEntree || '—'})`;
+
+      renderLeaves();
+      modal.showModal();
+    }
+    function closeModal(){ modal.close(); }
+
+    function calcPreview(){
+      const debut = document.getElementById('lv-debut').value;
+      const fin = document.getElementById('lv-fin').value;
+      const excl = document.getElementById('lv-excl-we').checked;
+      const j = excl? businessDaysBetween(debut, fin) : daysBetween(debut, fin);
+      alert(j? `${j} jour(s)` : 'Veuillez sélectionner une période valide.');
+    }
+
+    function addLeave(){
+      if (!currentEmp) return;
+      const type = document.getElementById('lv-type').value;
+      const debut = document.getElementById('lv-debut').value;
+      const fin = document.getElementById('lv-fin').value;
+      const notes = document.getElementById('lv-notes').value.trim();
+      const excl = document.getElementById('lv-excl-we').checked;
+      const jours = excl? businessDaysBetween(debut, fin) : daysBetween(debut, fin);
+      if (!jours){ alert('Période invalide.'); return; }
+      const rec = { id: uid(), type, debut, fin, jours, exclWE: !!excl, notes };
+      currentEmp.leaves = currentEmp.leaves || []; currentEmp.leaves.push(rec);
+      // recalcul
+      const acquis = computeAccruedForYear(currentEmp);
+      const pris = leavesTakenThisYear(currentEmp);
+      const restant = Math.max(0, +(acquis - pris).toFixed(2));
+      document.getElementById('c-acquis').textContent = acquis;
+      document.getElementById('c-pris').textContent = pris;
+      document.getElementById('c-restant').textContent = restant;
+
+      saveEmployees();
+      renderLeaves();
+      renderTable();
+      document.getElementById('lv-notes').value='';
+    }
+
+    function renderLeaves(){
+      const list = document.getElementById('leave-list');
+      // Clear existing (keep header)
+      list.querySelectorAll('.leave-item.dynamic').forEach(n=> n.remove());
+      (currentEmp.leaves||[]).slice().sort((a,b)=> new Date(b.debut) - new Date(a.debut)).forEach(l=>{
+        const row = document.createElement('div'); row.className='leave-item dynamic';
+        row.innerHTML = `
+          <div>${l.debut || '—'} → ${l.fin || '—'} ${l.exclWE? '<span class="badge" title="weekends exclus">WE‑</span>':''}</div>
+          <div>${l.type}</div>
+          <div>${l.jours}</div>
+          <div>${new Date(l.debut).getFullYear()}</div>
+          <div>${l.notes || ''}</div>
+          <div><button class="btn small danger" data-lvdel="${l.id}">Suppr.</button></div>
+        `;
+        list.appendChild(row);
+      })
+      list.addEventListener('click', (ev)=>{
+        const b = ev.target.closest('button[data-lvdel]'); if (!b) return;
+        const id = b.dataset.lvdel;
+        currentEmp.leaves = (currentEmp.leaves||[]).filter(x=> x.id!==id);
+        saveEmployees();
+        renderLeaves();
+        renderTable();
+      }, { once:true });
+    }
+
+    /* =====================
+       EXPORT / IMPORT
+    ====================== */
+    document.getElementById('export-json').addEventListener('click', ()=>{
+      const blob = new Blob([JSON.stringify(employees, null, 2)], { type:'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'employes.json'; a.click();
+      URL.revokeObjectURL(a.href);
+    })
+
+    document.getElementById('import-json-input').addEventListener('change', async (e)=>{
+      const f = e.target.files?.[0]; if (!f) return;
+      const text = await f.text();
+      try{
+        const arr = JSON.parse(text);
+        if (!Array.isArray(arr)) throw new Error('format invalide');
+        // fusion simple (remplace si même id)
+        const map = new Map(employees.map(x=>[x.id,x]));
+        arr.forEach(x=> map.set(x.id || uid(), { leaves:[], ...x }));
+        employees = Array.from(map.values());
+        saveEmployees(); renderTable(); alert('Import effectué.');
+      }catch(err){ alert('Fichier invalide.'); }
+      e.target.value='';
+    })
+
+    document.getElementById('export-csv').addEventListener('click', ()=>{
+      const headers = ['id','nom','prenom','dateNaissance','adresse','email','telephone','situationMaritale','nombreEnfants','numeroAssurance','dateEntree','classement','salaire','numeroCompte','banque','affectation','methodConge','quotaAnnuel'];
+      const lines = [headers.join(';')];
+      employees.forEach(e=>{
+        const row = headers.map(h=> String(e[h] ?? '').replace(/[\n\r;]+/g,' '));
+        lines.push(row.join(';'));
+      })
+      const blob = new Blob(["\uFEFF"+lines.join('\n')], { type:'text/csv;charset=utf-8' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='employes.csv'; a.click();
+      URL.revokeObjectURL(a.href);
+    })
+
+    document.getElementById('reset-app').addEventListener('click', ()=>{
+      if (!confirm('Supprimer toutes les données locales ?')) return;
+      employees = []; saveEmployees(); renderTable(); form.reset();
+      document.getElementById('photo-preview').innerHTML = '<span class="muted">Aperçu</span>';
+      document.getElementById('emp-id').value=''; delBtn.disabled=true;
+    })
+
+    /* =====================
+       INIT
+    ====================== */
+    renderTable();
+
+  </script></body>
+</html>
