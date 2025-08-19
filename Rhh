@@ -1,0 +1,372 @@
+<!doctype html>
+
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gestion du Personnel — Application (fichier unique)</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#6ee7b7;--accent-2:#60a5fa;--glass:rgba(255,255,255,0.04)}
+    *{box-sizing:border-box}
+    body{font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin:0; background:linear-gradient(180deg,#071024 0%, #071a2b 100%); color:#e6eef6}
+    .container{max-width:1100px;margin:28px auto;padding:22px}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    .logo{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#05233a}
+    h1{font-size:20px;margin:0}
+    p.lead{color:var(--muted);margin:0;font-size:13px}.grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:16px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
+
+form .row{display:flex;gap:10px}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+input[type=text], input[type=email], input[type=date], input[type=number], select, textarea{width:100%;padding:10px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);border-radius:8px;color:inherit}
+textarea{min-height:80px}
+.col-2{flex:1}
+.col-3{flex:0 0 120px}
+.actions{display:flex;gap:8px;align-items:center;margin-top:12px}
+button{padding:10px 12px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#042033;cursor:pointer;font-weight:600}
+button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+.photo-uploader{display:flex;gap:10px;align-items:center}
+.thumb{width:72px;height:72px;border-radius:8px;object-fit:cover;background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.03)}
+
+.table-wrap{margin-top:14px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:left;font-size:13px}
+th{color:var(--muted);font-weight:600}
+td img{width:36px;height:36px;border-radius:6px;object-fit:cover}
+.small{font-size:12px;color:var(--muted)}
+
+.search-row{display:flex;gap:8px;margin-bottom:10px}
+input.search{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:rgba(255,255,255,0.02)}
+
+footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+
+/* responsive */
+@media (max-width:980px){.grid{grid-template-columns:1fr} .card{padding:12px}}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">HR</div>
+      <div>
+        <h1>Application de gestion du personnel</h1>
+        <p class="lead">Fichier unique HTML — ajouter, modifier, supprimer, exporter. Calcul des congés dans une fenêtre popup.</p>
+      </div>
+    </header><div class="grid">
+  <section class="card">
+    <h2 style="margin-top:0">Fiche employé</h2>
+    <form id="empForm">
+      <div class="row" style="margin-bottom:10px">
+        <div class="col-2">
+          <label>Nom</label>
+          <input type="text" id="nom" required />
+        </div>
+        <div class="col-2">
+          <label>Prénom</label>
+          <input type="text" id="prenom" required />
+        </div>
+        <div class="col-3">
+          <label>Date de naissance</label>
+          <input type="date" id="dob" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-bottom:10px">
+        <div class="col-2">
+          <label>Adresse</label>
+          <input type="text" id="adresse" />
+        </div>
+        <div class="col-2">
+          <label>E‑mail</label>
+          <input type="email" id="email" />
+        </div>
+        <div class="col-3">
+          <label>Téléphone</label>
+          <input type="text" id="tel" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-bottom:10px">
+        <div class="col-2">
+          <label>Identifiant national</label>
+          <input type="text" id="idnat" />
+        </div>
+        <div class="col-2">
+          <label>Numéro acte naissance</label>
+          <input type="text" id="numacte" />
+        </div>
+        <div class="col-3">
+          <label>Numéro d'assurance</label>
+          <input type="text" id="numassur" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-bottom:10px">
+        <div class="col-2">
+          <label>Date d'entrée</label>
+          <input type="date" id="dateentree" />
+        </div>
+        <div class="col-2">
+          <label>Classement</label>
+          <input type="text" id="classement" placeholder="(champ vide)" />
+        </div>
+        <div class="col-3">
+          <label>Salaire (en DA)</label>
+          <input type="number" id="salaire" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-bottom:10px">
+        <div class="col-2">
+          <label>Numéro de compte</label>
+          <input type="text" id="numcompte" />
+        </div>
+        <div class="col-2">
+          <label>Banque</label>
+          <select id="banque">
+            <option>CCP</option>
+            <option>FRANSABANK</option>
+            <option>EL-DJAZAIR</option>
+            <option>SOCIETE GÉNÉRALE</option>
+            <option>NATIXIS</option>
+            <option>BDL</option>
+            <option>CPA</option>
+            <option>AL BARAKA</option>
+            <option>TRUST BANK ALGERIA</option>
+            <option>EL SALEM BANQUE</option>
+          </select>
+        </div>
+        <div class="col-3">
+          <label>Affection</label>
+          <select id="affectation"><option>administration</option><option>artistique</option></select>
+        </div>
+      </div>
+
+      <div style="margin-bottom:10px">
+        <label>Situation maritale</label>
+        <input type="text" id="situation" />
+      </div>
+
+      <div class="row" style="margin-bottom:10px">
+        <div class="col-2">
+          <label>Nombre d'enfants</label>
+          <input type="number" id="nenfants" min="0" />
+        </div>
+        <div class="col-2">
+          <label>Photo (télécharger)</label>
+          <div class="photo-uploader">
+            <input type="file" id="photo" accept="image/*" />
+            <img id="preview" class="thumb" alt="Prévisualisation" />
+          </div>
+        </div>
+        <div class="col-3">
+          <label>Observations</label>
+          <input type="text" id="observ" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="saveBtn">Enregistrer</button>
+        <button type="button" id="newBtn" class="ghost">Nouveau</button>
+        <button type="button" id="calcConge" class="ghost">Calculer congé (popup)</button>
+        <button type="button" id="exportJson" class="ghost">Exporter (JSON)</button>
+      </div>
+    </form>
+
+    <div class="table-wrap">
+      <div class="search-row">
+        <input class="search" id="search" placeholder="Recherche par nom, prénom, identifiant..." />
+        <select id="filterAffectation"><option value="">Tous</option><option value="administration">administration</option><option value="artistique">artistique</option></select>
+      </div>
+      <table id="empTable">
+        <thead><tr><th>Photo</th><th>Nom complet</th><th>Aff.</th><th>Salaire</th><th class="small">Actions</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <aside class="card" style="height:fit-content">
+    <h3>Résumé / Outils</h3>
+    <p class="small">Utilisez la fiche pour ajouter ou modifier un employé. Les données sont stockées dans <strong>localStorage</strong> du navigateur (fichier unique).</p>
+
+    <div style="margin-top:10px">
+      <p class="small"><strong>Total employés :</strong> <span id="total">0</span></p>
+      <p class="small"><strong>CAUTION :</strong> Ce fichier est autonome. Pour sauvegarder définitivement, utilisez <em>Exporter (JSON)</em> puis sauvegardez le fichier.</p>
+    </div>
+
+    <div style="margin-top:14px;display:flex;gap:8px;flex-direction:column">
+      <button id="loadSample" class="ghost">Charger exemples</button>
+      <button id="clearAll" class="ghost">Supprimer tout</button>
+    </div>
+
+    <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)" />
+    <p class="small">Version simple — compatible avec tout navigateur moderne. Contact: admin (local)</p>
+  </aside>
+</div>
+
+<footer>
+  <small>Fichier unique HTML — sauvegardez localement. Conçu pour être simple, modifiable et auto‑contenu.</small>
+</footer>
+
+  </div>  <script>
+    // util
+    const $ = id => document.getElementById(id);
+    let editId = null;
+
+    function readFileAsDataURL(file){
+      return new Promise((res, rej)=>{
+        const r = new FileReader(); r.onload = e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(file);
+      })
+    }
+
+    // preview photo
+    $('photo').addEventListener('change', async e=>{
+      const f = e.target.files[0]; if(!f){ $('preview').src=''; return }
+      const data = await readFileAsDataURL(f); $('preview').src = data;
+    })
+
+    // save
+    $('saveBtn').addEventListener('click', async ()=>{
+      const emp = collectForm();
+      if(!emp.nom || !emp.prenom){ alert('Nom et prénom requis'); return }
+      if(editId){ emp.id = editId; updateEmployee(emp); } else { emp.id = 'emp_' + Date.now(); addEmployee(emp); }
+      resetForm(); renderTable();
+    })
+
+    $('newBtn').addEventListener('click', ()=>{ resetForm(); })
+
+    // calculate leave popup
+    $('calcConge').addEventListener('click', ()=>{
+      const data = collectForm();
+      const popup = window.open('', 'calcConge', 'width=520,height=420');
+      const html = generateCongePopup(data);
+      popup.document.write(html); popup.document.close();
+    })
+
+    function generateCongePopup(emp){
+      const dateEntree = emp.dateentree || '';
+      const name = (emp.nom||'') + ' ' + (emp.prenom||'');
+      const now = new Date();
+      return `<!doctype html><html><head><meta charset="utf-8"><title>Calcul congé</title><style>body{font-family:Inter,Arial;background:#071a2b;color:#e6eef6;padding:18px}label{display:block;margin-top:8px;color:#9aa4b2}input,select{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);width:100%}button{margin-top:10px;padding:8px;border-radius:8px;border:0;background:linear-gradient(90deg,#6ee7b7,#60a5fa);color:#042033;font-weight:600} .result{margin-top:12px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02)}</style></head><body><h2>Calcul des congés</h2><p class="small">Employé: <strong>${escapeHtml(name)}</strong></p><label>Date d'entrée</label>
+    <input type="date" id="dateEnt" value="${dateEntree}" />
+    <label>Période de référence (fin)</label>
+    <input type="date" id="dateFin" value="${now.toISOString().slice(0,10)}" />
+    <label>Mode de calcul</label>
+    <select id="mode"><option value="monthly">2.5 jours / mois</option><option value="annual">Quota annuel 30 jours</option></select>
+    <button id="calc">Calculer</button>
+    <div class="result" id="out">Entrez la date d'entrée, choisissez la période et cliquez sur Calculer.</div>
+    <script>
+      function monthsBetween(d1, d2){
+        if(!d1 || !d2) return 0;
+        const a=new Date(d1), b=new Date(d2); if(a>b) return 0;
+        let months = (b.getFullYear()-a.getFullYear())*12 + (b.getMonth()-a.getMonth());
+        const dayDiff = b.getDate() - a.getDate(); if(dayDiff < 0) months -=1;
+        return months>=0?months:0;
+      }
+      document.getElementById('calc').addEventListener('click', ()=>{
+        const d1 = document.getElementById('dateEnt').value; const d2 = document.getElementById('dateFin').value; const mode = document.getElementById('mode').value;
+        if(!d1 || !d2){ document.getElementById('out').innerText = 'Remplissez les dates.'; return }
+        const months = monthsBetween(d1,d2);
+        let resultText='';
+        if(mode==='monthly'){
+          const jours = (months * 2.5).toFixed(2);
+          resultText = `Mois complets travaillés: ${months} => Congés acquis: ${jours} jours (2.5 j/mois)`;
+        } else {
+          // Pro rata of 30 jours selon fraction de l'année entre d1 and d2
+          const start = new Date(d1), end = new Date(d2);
+          if(end<start){ document.getElementById('out').innerText='Date de fin antérieure à date d\'entrée.'; return }
+          const ms = end - start; const days = Math.floor(ms / (1000*60*60*24));
+          const fraction = Math.min(1, days/365);
+          const jours = (30 * fraction).toFixed(2);
+          resultText = `Durée: ${days} jours => Congés acquis (quota 30j/an, prorata): ${jours} jours`;
+        }
+        document.getElementById('out').innerText = resultText;
+      })
+    <\/script>
+  </body></html>`
+}
+
+function escapeHtml(s){ if(!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// collect form
+async function collectForm(){
+  const photoFile = $('photo').files[0];
+  let photoData = $('preview').src || '';
+  if(photoFile && !photoData){ photoData = await readFileAsDataURL(photoFile); }
+  return {
+    nom: $('nom').value.trim(), prenom: $('prenom').value.trim(), dob: $('dob').value,
+    adresse: $('adresse').value, email: $('email').value, tel: $('tel').value,
+    idnat: $('idnat').value, numacte: $('numacte').value, numassur: $('numassur').value,
+    dateentree: $('dateentree').value, classement: $('classement').value, salaire: $('salaire').value,
+    numcompte: $('numcompte').value, banque: $('banque').value, affectation: $('affectation').value,
+    situation: $('situation').value, nenfants: $('nenfants').value, photo: photoData, observ: $('observ').value
+  }
+}
+
+// storage handling
+function getEmployees(){ return JSON.parse(localStorage.getItem('emps_v1')||'[]') }
+function setEmployees(a){ localStorage.setItem('emps_v1', JSON.stringify(a)) }
+function addEmployee(emp){ const a=getEmployees(); a.push(emp); setEmployees(a) }
+function updateEmployee(emp){ const a=getEmployees(); const idx = a.findIndex(x=>x.id===emp.id); if(idx>=0){ a[idx]=emp; setEmployees(a);} }
+function deleteEmployee(id){ if(!confirm('Supprimer cet employé ?')) return; const a=getEmployees().filter(x=>x.id!==id); setEmployees(a); renderTable(); }
+
+function renderTable(){ const tbody = document.querySelector('#empTable tbody'); tbody.innerHTML='';
+  const q = $('search').value.toLowerCase(); const filterA = $('filterAffectation').value;
+  const list = getEmployees().filter(e=>{
+    if(filterA && e.affectation !== filterA) return false;
+    if(!q) return true;
+    const s = (e.nom+' '+e.prenom+' '+(e.idnat||'')+' '+(e.numacte||'')).toLowerCase();
+    return s.includes(q);
+  });
+  list.forEach(e=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${e.photo?`<img src="${e.photo}" alt="photo">`:'-'}</td>
+    <td><strong>${e.nom} ${e.prenom}</strong><div class="small">ID: ${e.idnat||'-'} · ${e.email||''}</div></td>
+    <td>${e.affectation||'--'}</td>
+    <td>${e.salaire?e.salaire+' DA':'-'}</td>
+    <td class="small">
+      <button onclick="viewEmployee('${e.id}')" class="ghost">Voir</button>
+      <button onclick="editEmployee('${e.id}')" class="ghost">Modifier</button>
+      <button onclick="deleteEmployee('${e.id}')" class="ghost">Suppr</button>
+    </td>`;
+    tbody.appendChild(tr);
+  });
+  $('total').innerText = list.length;
+}
+
+window.viewEmployee = function(id){ const e = getEmployees().find(x=>x.id===id); if(!e) return alert('Introuvable'); const w = window.open('', '_blank');
+  w.document.write(`<html><head><meta charset=\"utf-8\"><title>${e.nom} ${e.prenom}</title><style>body{font-family:Inter,Arial;padding:18px;background:#071a2b;color:#e6eef6}img{max-width:140px;border-radius:8px}</style></head><body><h2>${e.nom} ${e.prenom}</h2><p><strong>Affection:</strong> ${e.affectation}</p><p><strong>Date d\'entrée:</strong> ${e.dateentree||'-'}</p><p><strong>Salaire:</strong> ${e.salaire?e.salaire+' DA':'-'}</p>${e.photo?'<img src="'+e.photo+'">':''}<p><small>Fermeture de cette fenêtre n\'enregistre rien.</small></p></body></html>`); w.document.close(); }
+
+window.editEmployee = function(id){ const e = getEmployees().find(x=>x.id===id); if(!e) return; editId = id; $('nom').value=e.nom; $('prenom').value=e.prenom; $('dob').value=e.dob; $('adresse').value=e.adresse; $('email').value=e.email; $('tel').value=e.tel; $('idnat').value=e.idnat; $('numacte').value=e.numacte; $('numassur').value=e.numassur; $('dateentree').value=e.dateentree; $('classement').value=e.classement; $('salaire').value=e.salaire; $('numcompte').value=e.numcompte; $('banque').value=e.banque; $('affectation').value=e.affectation; $('situation').value=e.situation; $('nenfants').value=e.nenfants; $('observ').value=e.observ; $('preview').src = e.photo||''; window.scrollTo({top:0,behavior:'smooth'}); }
+
+function resetForm(){ editId=null; document.getElementById('empForm').reset(); $('preview').src=''; }
+
+// export
+$('exportJson').addEventListener('click', ()=>{
+  const data = JSON.stringify(getEmployees(), null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'employes_export.json'; a.click(); URL.revokeObjectURL(url);
+})
+
+// search/filter
+$('search').addEventListener('input', renderTable);
+$('filterAffectation').addEventListener('change', renderTable);
+
+// sample data
+$('loadSample').addEventListener('click', ()=>{
+  const sample=[
+    {id:'emp_1',nom:'BENALI',prenom:'Ahmed',affectation:'administration',salaire:45000, email:'a.benali@example.dz'},
+    {id:'emp_2',nom:'BOUCHER',prenom:'Sofia',affectation:'artistique',salaire:52000, email:'s.boucher@example.dz'}
+  ]; setEmployees(sample); renderTable();
+})
+
+$('clearAll').addEventListener('click', ()=>{ if(confirm('Supprimer toutes les données ?')){ localStorage.removeItem('emps_v1'); renderTable(); } })
+
+// init
+renderTable();
+
+  </script>
+</body>
+</html>
